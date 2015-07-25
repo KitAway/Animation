@@ -42,7 +42,7 @@ public class MainActivity extends ActionBarActivity {
 
         snowWhiteList.add("snow white");
         snowWhiteList.add("What's your name?");
-        //snowWhiteList.add("Would you like tell me the story about Snow White?");
+        snowWhiteList.add("Would you like tell me the story about Snow White?");
 
         filepath=new File(Environment.getExternalStorageDirectory().getPath()+File.separator+"Animation");
         if (!filepath.isDirectory())
@@ -113,7 +113,6 @@ public class MainActivity extends ActionBarActivity {
             topic=params[0].topic;
             question=params[0].question;
             tts.SpeakText(question,question);
-            videoView.start();
             boolTask[mTTs]=true;
             tts.getTTs().setOnUtteranceProgressListener(new UtteranceProgressListener() {
                 @Override
@@ -124,13 +123,13 @@ public class MainActivity extends ActionBarActivity {
                 @Override
                 public void onDone(String utteranceId) {
                     boolTask[mTTs] = false;
-                    videoView.stopPlayback();
+                    videoView.pause();
                 }
 
                 @Override
                 public void onError(String utteranceId) {
                     boolTask[mTTs] = false;
-                    videoView.stopPlayback();
+                    videoView.pause();
                 }
             });
             while(boolTask[mTTs]){
@@ -161,9 +160,10 @@ public class MainActivity extends ActionBarActivity {
     }
 
     public void actNext(String topic, Iterator<?> iterator){
-            String question=iterator.next().toString();
-            new taskTTs().executeOnExecutor(AsyncTask.SERIAL_EXECUTOR,
+        String question=iterator.next().toString();
+        new taskTTs().executeOnExecutor(AsyncTask.SERIAL_EXECUTOR,
                     new MyParas(topic,question,iterator));
+        videoView.start();
     }
 
     private class asyncRecording extends AsyncTask<MyParas, Void ,Void> {
@@ -199,6 +199,8 @@ public class MainActivity extends ActionBarActivity {
                             boolTask[mMain]=false;
                             if (iterator.hasNext())
                                 actNext(topic,iterator);
+                            else
+                                tts.SpeakText(thanks,null);
                         }
                     });
             try {
